@@ -114,7 +114,7 @@ class GUI_API_EXPORT MainWindow : public QMainWindow, public ExtActionContainer
         bool hasClosedWindowToRestore() const;
         bool isClosingApp() const;
         QToolBar* getToolBar(int toolbar) const;
-        void openDb(const QString& path);
+        void openDb(const QStringList& pathList);
         QMenu* getDatabaseMenu() const;
         QMenu* getStructureMenu() const;
         QMenu* getViewMenu() const;

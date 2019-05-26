@@ -821,8 +821,8 @@ void MainWindow::messageFromSecondaryInstance(quint32 instanceId, QByteArray mes
     UNUSED(instanceId);
     QApplication::setActiveWindow(this);
     raise();
-    QString dbToOpen = deserializeFromBytes(message).toString();
-    if (!dbToOpen.isNull())
+    QStringList dbToOpen = deserializeFromBytes(message).toStringList();
+    if (dbToOpen.size() > 0)
         openDb(dbToOpen);
 }
 
@@ -897,8 +897,14 @@ QToolBar* MainWindow::getToolBar(int toolbar) const
     return nullptr;
 }
 
-void MainWindow::openDb(const QString& path)
+void MainWindow::openDb(const QStringList& pathList)
 {
+	for( int i = 0; i < pathList.size(); ++i ) {
+		QString pathWithAlias = pathList.at(i);
+		QStringList pathParts = pathWithAlias.split( ";" );
+		QString alias = ( pathParts.size() > 1 ) ? pathParts.at(0) : QString::null;
+		QString path = ( pathParts.size() > 1 ) ? pathParts.at(1) : pathParts.at(0);
+			
     Db* db = DBLIST->getByPath(path);
     if (db)
     {
@@ -906,7 +912,15 @@ void MainWindow::openDb(const QString& path)
         return;
     }
 
-    QString name = DBLIST->quickAddDb(path, QHash<QString,QVariant>());
+		QString name;
+		if (alias.isNull() ) {
+			name = DBLIST->quickAddDb(path, QHash<QString,QVariant>());
+		}
+		else {
+			if (DBLIST->addDb(alias, path, QHash<QString,QVariant>(), false))
+				name = alias;
+		}
+		
     if (!name.isNull())
     {
         notifyInfo(tr("Database passed in command line parameters (%1) has been temporarily added to the list under name: %2").arg(path, name));
@@ -915,6 +929,7 @@ void MainWindow::openDb(const QString& path)
     }
     else
         notifyError(tr("Could not add database %1 to list.").arg(path));
+}
 }
 
 QMenu* MainWindow::getDatabaseMenu() const

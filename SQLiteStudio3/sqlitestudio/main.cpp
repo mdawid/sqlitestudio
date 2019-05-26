@@ -43,7 +43,7 @@
 
 static bool listPlugins = false;
 
-QString uiHandleCmdLineArgs(bool applyOptions = true)
+QStringList uiHandleCmdLineArgs(bool applyOptions = true)
 {
     QCommandLineParser parser;
     parser.setApplicationDescription(QObject::tr("GUI interface to SQLiteStudio, a SQLite manager."));
@@ -69,7 +69,7 @@ QString uiHandleCmdLineArgs(bool applyOptions = true)
     parser.addOption(masterConfigOption);
     parser.addOption(listPluginsOption);
 
-    parser.addPositionalArgument(QObject::tr("file"), QObject::tr("Database file to open"));
+    parser.addPositionalArgument(QObject::tr("files"), QObject::tr("Database files to open"), QObject::tr("[files...]") );
 
     parser.process(qApp->arguments());
 
@@ -90,11 +90,7 @@ QString uiHandleCmdLineArgs(bool applyOptions = true)
             Config::setMasterConfigFile(parser.value(masterConfigOption));
     }
 
-    QStringList args = parser.positionalArguments();
-    if (args.size() > 0)
-        return args[0];
-
-    return QString::null;
+    return parser.positionalArguments();
 }
 
 int main(int argc, char *argv[])
@@ -105,14 +101,14 @@ int main(int argc, char *argv[])
 #ifdef Q_OS_WIN
         AllowSetForegroundWindow(DWORD( a.primaryPid()));
 #endif
-        QString dbToOpen = uiHandleCmdLineArgs();
+        QStringList dbToOpen = uiHandleCmdLineArgs();
         a.sendMessage(serializeToBytes(dbToOpen));
         return 0;
     }
 
     qInstallMessageHandler(uiMessageHandler);
 
-    QString dbToOpen = uiHandleCmdLineArgs();
+    QStringList dbToOpen = uiHandleCmdLineArgs();
 
     DbTreeItem::initMeta();
     SqlQueryModelColumn::initMeta();
@@ -170,7 +166,7 @@ int main(int argc, char *argv[])
     MainWindow::getInstance()->restoreSession();
     MainWindow::getInstance()->show();
 
-    if (!dbToOpen.isNull())
+    if (dbToOpen.size() > 0)
         MainWindow::getInstance()->openDb(dbToOpen);
 
 #ifdef PORTABLE_CONFIG
