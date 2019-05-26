@@ -47,25 +47,8 @@ foreach f [glob -nocomplain *.a] {
 }
 
 # Copy Qt files
-cd $QT_DIR
-set QT_LIB_LIST [list Qt5Core Qt5Gui Qt5Network Qt5PrintSupport Qt5Script Qt5Svg Qt5Widgets Qt5Xml libgcc_s_dw2-1 libstdc++-6 libwinpthread-1]
-foreach f $QT_LIB_LIST {
-	file copy "$f.dll" $PORTABLE
-}
-file copy -force qt.conf $PORTABLE
-
-file mkdir $PORTABLE/iconengines $PORTABLE/imageformats $PORTABLE/platforms $PORTABLE/printsupport $PORTABLE/styles
-cd $QT_DIR/../plugins
-
-file copy iconengines/qsvgicon.dll $PORTABLE/iconengines
-file copy platforms/qwindows.dll $PORTABLE/platforms
-file copy styles/qwindowsvistastyle.dll $PORTABLE/styles
-file copy printsupport/windowsprintersupport.dll $PORTABLE/printsupport
-foreach f [list qdds qgif qicns qico qjpeg qsvg qtga qtiff qwbmp] {
-	if {[file exists imageformats/$f.dll]} {
-		file copy imageformats/$f.dll $PORTABLE/imageformats
-	}
-}
+cd $PORTABLE
+exec $QT_DIR/windeployqt SQLiteStudio.exe
 
 # Copy app-specific deps
 cd $parent_dir/../lib
